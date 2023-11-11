@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+{% load leaflet_tags %}
+{% if user.is_authenticated %}
+<head>
+    {% leaflet_js %}
+    {% leaflet_css %}
+    <title>Map</title></head>
+<body>
+Hi {{ user.username }}!
+<p>This is the MAP page</p>
+<button onclick="getUserLocation()">Get My Location</button>
+<br>
+
+{% leaflet_map 'map' %}
+<style>#map {height: 500px;} </style>
+
+<script>
+    let detail;
+
+    window.addEventListener("map:init", function (e) {
+        detail = e.detail;
+    })
+
+    function getUserLocation() {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(onSuccess, onError);
+        } else {
+            alert('Geolocation is not supported by your browser');
+        }
+    }
+
+    function onSuccess(position) {
+        let latitude = position.coords.latitude;
+        let longitude = position.coords.longitude;
+        let accuracy = position.coords.accuracy;
+
+        let marker = L.marker([latitude, longitude]).addTo(detail.map);
+        marker.bindPopup('Your location').openPopup();
+
+        let circle = L.circle([latitude, longitude], {
+            radius: accuracy,
+            color: 'blue',
+            fillColor: 'blue',
+            fillOpacity: 0.2,
+        }).addTo(detail.map);
+
+        detail.map.fitBounds(circle.getBounds());
+        updateDatabaseWithLocation(latitude, longitude);
+    }
+
+    function onError(error) {
+        alert('Error getting your location: ' + error.message);
+    }
+
+    function updateDatabaseWithLocation(latitude, longitude) {
+            // Send a POST request to the Django view
+            fetch('/update_location/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',  // Include CSRF token
+                },
+                body: JSON.stringify({
+                    latitude: latitude,
+                    longitude: longitude,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('Error updating location:', error);
+            });
+        }
+</script>
+</body>
+
+{% else %}
+  <p>You are not logged in</p>
+  <a href="{% url 'login' %}">Log In</a>
+{% endif %}
+{% endblock %}
