@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic.base import TemplateView
-from orinmcdawm.views import map_view, update_location
+from orinmcdawm.views import map_view, update_location, get_last_location
 
 
 urlpatterns = [
@@ -26,4 +26,5 @@ urlpatterns = [
     path('map/', map_view, name='map'),
     path("", TemplateView.as_view(template_name="home.html"), name="home"),
     path('update_location/', update_location, name='update_location'),
+    path('get_last_location/', get_last_location, name='get_last_location'),
 ]

@@ -15,14 +15,31 @@ Hi {{ user.username }}!
 <br>
 
 {% leaflet_map 'map' %}
-<style>#map {height: 500px;} </style>
+<style>#map {height: 800px;} </style>
 
 <script>
     let detail;
 
     window.addEventListener("map:init", function (e) {
         detail = e.detail;
+    	fetchLastSavedLocation();
     })
+
+    function fetchLastSavedLocation() {
+        fetch('/get_last_location/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.latitude && data.longitude) {
+                    // If the last location exists, add a marker to the map
+                    let lastLocation = L.marker([data.latitude, data.longitude]).addTo(detail.map);
+                    lastLocation.bindPopup('Last Saved Location').openPopup();
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching last saved location:', error);
+            });
+    }
+
 
     function getUserLocation() {
         if ('geolocation' in navigator) {

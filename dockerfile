@@ -17,6 +17,10 @@ RUN apt-get update && apt-get install -y \
     libpangocairo-1.0-0 \
     libgdk-pixbuf2.0-0 \
     libffi-dev \
+    binutils \
+    libproj-dev \
+    gdal-bin \
+    libgdal-dev \
     shared-mime-info \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -30,7 +34,8 @@ COPY ENV.yml /usr/src/app
 RUN conda env create -n geodjango --file ENV.yml
 
 # Activate Conda environment
-RUN echo "source activate geodjango" > ~/.bashrc
+RUN echo "conda activate geodjango" >> ~/.bashrc
+SHELL ["/bin/bash", "--login", "-c"]
 
 # Set up Conda channels and install uWSGI
 RUN conda config --add channels conda-forge && conda config --set channel_priority strict
@@ -39,15 +44,20 @@ RUN conda install uwsgi
 # Copy your Django project into the image
 COPY . /usr/src/app
 
-
-# Activate Conda environment
-RUN echo "conda activate geodjango" > ~/.bashrc
+# Make sure that static files are up to date and available
+#RUN python manage.py collectstatic --no-input
 
 # Collect static files (inside the activated environment)
-CMD /bin/bash -c "source ~/.bashrc && python manage.py collectstatic --no-input"
+CMD /bin/bash -c "python manage.py collectstatic --no-input"
+
+# Copy the uwsgi.ini file
+COPY uwsgi.ini ./bin/sh/
+
 
 # Expose the port
 EXPOSE 8001
+EXPOSE 8000
 
 # Define the entrypoint
-ENTRYPOINT ["uwsgi", "--ini", "uwsgi.ini"]
+#ENTRYPOINT ["uwsgi", "--ini", "uwsgi.ini"]
+CMD uwsgi --ini uwsgi.ini

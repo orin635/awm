@@ -31,3 +31,16 @@ def update_location(request):
             return JsonResponse({'status': 'error', 'message': str(e)})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+
+
+
+
+def get_last_location(request):
+    if request.method == 'GET' and request.user.is_authenticated:
+        profile = Profile.objects.get(user=request.user)
+        last_location = {
+            'latitude': profile.lat,
+            'longitude': profile.lon,
+        }
+        return JsonResponse(last_location)
+    return JsonResponse({'error': 'Unauthorized'}, status=401)

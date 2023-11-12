@@ -5,9 +5,27 @@
 
 {% block content %}
 {% if user.is_authenticated %}
-  Hi {{ user.username }}!
-  <p><a href="{% url 'logout' %}">Log Out</a></p>
-  <p><a href="{% url 'map' %}">Checkout the Map</a></p>
+    <style>
+        /* Custom styles */
+        .center-screen {
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .custom-container {
+            text-align: center;
+        }
+    </style>
+
+
+    <div class="container-fluid center-screen">
+    <div class="custom-container">
+        <br><br>
+        <p class="text-center"><h3 class="display-4">Hi {{ user.username }}!</h3></p>
+    </div>
+</div>
+
 {% else %}
   <p>You are not logged in</p>
   <a href="{% url 'login' %}">Log In</a>

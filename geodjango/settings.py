@@ -12,12 +12,14 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+from django.contrib.gis import gdal
 import socket
 
 
 os.environ['PROJ_LIB'] = f"{os.environ.get('CONDA_PREFIX','')}/share/proj"
 os.environ['GDAL_DATA'] = f"{os.environ.get('CONDA_PREFIX','')}/share"
-GDAL_LIBRARY_PATH = r'C:\OSGeo4W\bin\gdal307'
+GDAL_LIBRARY_PATH = r'/opt/conda/envs/geodjango/lib/libgdal.so'
+
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -33,8 +35,13 @@ with open('secret_key.txt') as f:
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+WHITENOISE_DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['awm_django', 'localhost', '127.0.0.1', '3.253.22.97']
+CORS_ALLOWED_ORIGINS = [
+    'https://3.253.22.97'
+]
+
 
 
 # Application definition
@@ -58,6 +65,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -98,10 +106,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'gis',
-        'HOST': 'localhost',
+        'HOST': 'awm_postgis',
         'USER': 'orinmcd',
         'PASSWORD': database_password,
-        'PORT': 25432
+        'PORT': 5432
     }
 }
 
@@ -161,12 +169,15 @@ LEAFLET_CONFIG = {
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 
-STATIC_ROOT = BASE_DIR / "staticfiles"
-
-
+STATIC_URL = '/static/'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
-STATIC_URL = "/static/"
+STATIC_ROOT = '/usr/src/app/static/'
+#STATIC_ROOT = '/usr/src/app/static'
+#STATIC_ROOT = BASE_DIR / "static"
+#STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+#STATIC_ROOT = os.path.join(BASE_DIR, "static")
+#STATIC_URL = "/static/"
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = None
